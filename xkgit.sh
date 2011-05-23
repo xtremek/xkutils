@@ -100,17 +100,10 @@ function setup() {
   echo "Starting setup operation..."
 
   if [ -d $repo_path ]; then
-    echo "Error: The directory '$repo_path' already exists!"
-    echo "You can delete this folder if you want to re-setup your project."
-    echo "Example: "
-    echo ""
-    echo "  rm -rf $repo_path"
-    echo "  $script_name $cmd"
-    echo ""
-    return 1
+    echo "The directory $repo_path already exists, let's use it..."
+	else
+	  git clone --bare . $repo_path
   fi
-
-  git clone --bare . $repo_path
 
   tmp=$(git remote)
   if [[ $tmp == *$origin* ]]; then
