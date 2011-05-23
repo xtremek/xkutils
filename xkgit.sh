@@ -235,13 +235,8 @@ if   [ "$cmd" = "setup"   ]; then
 elif [ "$cmd" = "destroy" ]; then
   destroy
 elif [ "$cmd" = "pull" ]; then
-
   pull $2
 elif [ "$cmd" = "push" ]; then
-  if [ ! -z "$2" ]; then
-    current_branch=$2
-  fi
-
   push $2
 elif [ "$cmd" = ""      ]; then
   echo "Please specify a command for this script to run!"
