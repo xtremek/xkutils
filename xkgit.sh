@@ -2,7 +2,7 @@
 
 script_name=$0
 cmd=$1
-
+current_branch=""
 
 function is_repo() {
   if [ -d ".git" ]; then
@@ -12,6 +12,15 @@ function is_repo() {
     return 1
   fi
 }
+
+function current_repo() {
+  basename $PWD
+}
+
+function get_current_branch() {
+  git branch 2> /dev/null | sed -e '/^[^*]/d' -e 's/* \(.*\)/\1/'
+}
+
 
 function find_dropbox_path() {
   sqlite3 ~/.dropbox/config.db "select value from config where key = 'dropbox_path'"
@@ -73,7 +82,7 @@ function setup() {
   dropbox_path=$(find_dropbox_path)
 
   echo "Checking repository name..."
-  repo=$(basename $PWD)
+  repo=$(current_repo)
 
   echo ""
   echo "======================== Environment ============================"
@@ -133,10 +142,85 @@ function setup() {
   echo ""
 }
 
+function timestamp() {
+  date +%m%d%y%H%M%S
+}
+
+function log_filename() {
+  if [ -z $1 ]; then
+    echo "$(current_repo)-$(timestamp).log"
+  else
+    echo "$(current_repo)-$1-$(timestamp).log"
+  fi
+}
+
+function print_rc() {
+  if [ $1 -eq 0 ]; then
+    echo "[OK]"
+  else
+    echo "[ERROR]"
+  fi
+}
+
+function pull() {
+  is_repo
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+
+  echo -n "Pull from Dropbox remote..."
+  log_file=$(log_filename dropbox)
+  git pull dropbox $current_branch &> $log_file
+  print_rc $?
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+  rm $log_file
+
+  echo -n "Pull from GitHub origin..."
+  log_file=$(log_filename origin)
+  git pull origin $current_branch &> $log_file
+  print_rc $?
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+  rm $log_file
+}
+
+function push() {
+  is_repo
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+
+  echo -n "Push to Dropbox remote..."
+  log_file=$(log_filename dropbox)
+  git push dropbox $current_branch &> $log_file
+  print_rc $?
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+  rm $log_file
+
+  echo -n "Push to GitHub origin..."
+  log_file=$(log_filename origin)
+  git push origin $current_branch &> $log_file
+  print_rc $?
+  if [ $? -eq 1 ]; then
+    return  
+  fi
+  rm $log_file
+}
+
+current_branch=$(get_current_branch)
 if   [ "$cmd" = "setup"   ]; then
   setup
 elif [ "$cmd" = "destroy" ]; then
   destroy
+elif [ "$cmd" = "pull" ]; then
+  pull
+elif [ "$cmd" = "push" ]; then
+  push
 elif [ "$cmd" = ""      ]; then
   echo "Please specify a command for this script to run!"
   echo "Example: "
