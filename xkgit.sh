@@ -157,9 +157,17 @@ function log_filename() {
 function print_rc() {
   if [ $1 -eq 0 ]; then
     echo "[OK]"
+    return 0
   else
     echo "[ERROR]"
+    return 1
   fi
+}
+
+function handle_error() {
+  echo "An error occured while running the command. Below is the error output:"
+  cat $1
+  rm $log_file
 }
 
 function pull() {
@@ -168,12 +176,19 @@ function pull() {
     return  
   fi
 
+  if [ ! -z "$2" ]; then
+    current_branch=$2
+  fi
+
+  echo "Using branch: $current_branch"
+
   echo -n "Pull from Dropbox remote..."
   log_file=$(log_filename dropbox)
   git pull dropbox $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
-    return  
+    handle_error $log_file
+    return 1
   fi
   rm $log_file
 
@@ -182,7 +197,8 @@ function pull() {
   git pull origin $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
-    return  
+    handle_error $log_file
+    return 1
   fi
   rm $log_file
 }
@@ -193,12 +209,18 @@ function push() {
     return  
   fi
 
+  if [ ! -z "$2" ]; then
+    current_branch=$2
+  fi
+  echo "Using branch: $current_branch"
+
   echo -n "Push to Dropbox remote..."
   log_file=$(log_filename dropbox)
   git push dropbox $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
-    return  
+    handle_error $log_file
+    return 1
   fi
   rm $log_file
 
@@ -207,20 +229,27 @@ function push() {
   git push origin $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
-    return  
+    handle_error $log_file
+    return 1
   fi
   rm $log_file
 }
 
 current_branch=$(get_current_branch)
+
 if   [ "$cmd" = "setup"   ]; then
   setup
 elif [ "$cmd" = "destroy" ]; then
   destroy
 elif [ "$cmd" = "pull" ]; then
-  pull
+
+  pull $2
 elif [ "$cmd" = "push" ]; then
-  push
+  if [ ! -z "$2" ]; then
+    current_branch=$2
+  fi
+
+  push $2
 elif [ "$cmd" = ""      ]; then
   echo "Please specify a command for this script to run!"
   echo "Example: "
