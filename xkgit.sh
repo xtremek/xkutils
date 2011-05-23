@@ -17,6 +17,45 @@ function find_dropbox_path() {
   sqlite3 ~/.dropbox/config.db "select value from config where key = 'dropbox_path'"
 }
 
+function destroy() {
+  is_repo
+  if [ $? -eq 1 ]; then
+    return 1
+  fi
+  project=$1
+  origin=dropbox
+
+  echo "This will delete the backup Git repository in your Dropbox" \
+       "folder and remove the remote origin '$origin' from your repo"
+
+  echo "Looking for user Dropbox path..."
+  dropbox_path=$(find_dropbox_path)
+
+  echo "Checking repository name..."
+  repo=$(basename $PWD)
+
+  echo ""
+  echo "======================== Environment ============================"
+  echo " - Dropbox Path: $dropbox_path"
+  echo " - Repository Name: $repo"
+  echo "================================================================="
+  echo ""
+
+  if [ "$project" == "" ]; then
+    repo_path=$dropbox_path/git-backup/$repo.git
+  else
+    repo_path=$dropbox_path/git-backup/$project/$repo.git
+  fi
+
+  echo "Removing Dropbox remote origin..."
+  git remote rm $origin
+
+  echo "Removing backup Git repo folder..."
+  rm -rf $repo_path
+
+  echo "The Dropbox backup repo has been successfully removed."
+}
+
 function setup() {
   is_repo
   if [ $? -eq 1 ]; then
@@ -94,10 +133,14 @@ function setup() {
   echo ""
 }
 
-if   [ "$cmd" = "setup" ]; then
+if   [ "$cmd" = "setup"   ]; then
   setup
+elif [ "$cmd" = "destroy" ]; then
+  destroy
 elif [ "$cmd" = ""      ]; then
   echo "Please specify a command for this script to run!"
   echo "Example: "
   echo " $script_name pull"
+else
+  echo "Unknown command \"$cmd\""
 fi
