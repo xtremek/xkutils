@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 script_name=$0
 cmd=$1
@@ -6,7 +6,7 @@ current_branch=""
 
 function is_repo() {
   if [ -d ".git" ]; then
-    return 0;
+    return 0
   else
     echo "No .git folder found. Please cd to a valid git repo and rerun this script."
     return 1
