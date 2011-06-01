@@ -1,4 +1,4 @@
-#/bin/bash
+#!/bin/bash
 
 script_name=$0
 cmd=$1
@@ -6,7 +6,7 @@ current_branch=""
 
 function is_repo() {
   if [ -d ".git" ]; then
-    return 0;
+    return 0
   else
     echo "No .git folder found. Please cd to a valid git repo and rerun this script."
     return 1
@@ -100,17 +100,10 @@ function setup() {
   echo "Starting setup operation..."
 
   if [ -d $repo_path ]; then
-    echo "Error: The directory '$repo_path' already exists!"
-    echo "You can delete this folder if you want to re-setup your project."
-    echo "Example: "
-    echo ""
-    echo "  rm -rf $repo_path"
-    echo "  $script_name $cmd"
-    echo ""
-    return 1
+    echo "The directory $repo_path already exists, let's use it..."
+	else
+	  git clone --bare . $repo_path
   fi
-
-  git clone --bare . $repo_path
 
   tmp=$(git remote)
   if [[ $tmp == *$origin* ]]; then
@@ -242,13 +235,8 @@ if   [ "$cmd" = "setup"   ]; then
 elif [ "$cmd" = "destroy" ]; then
   destroy
 elif [ "$cmd" = "pull" ]; then
-
   pull $2
 elif [ "$cmd" = "push" ]; then
-  if [ ! -z "$2" ]; then
-    current_branch=$2
-  fi
-
   push $2
 elif [ "$cmd" = ""      ]; then
   echo "Please specify a command for this script to run!"
