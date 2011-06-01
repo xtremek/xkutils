@@ -184,7 +184,7 @@ function pull() {
 
   echo -n "Pull from Dropbox remote..."
   log_file=$(log_filename dropbox)
-  git pull dropbox $current_branch &> $log_file
+  git pull -u dropbox $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
     handle_error $log_file
@@ -194,7 +194,7 @@ function pull() {
 
   echo -n "Pull from GitHub origin..."
   log_file=$(log_filename origin)
-  git pull origin $current_branch &> $log_file
+  git pull -u origin $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
     handle_error $log_file
@@ -216,7 +216,7 @@ function push() {
 
   echo -n "Push to Dropbox remote..."
   log_file=$(log_filename dropbox)
-  git push dropbox $current_branch &> $log_file
+  git push -u dropbox $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
     handle_error $log_file
@@ -226,7 +226,7 @@ function push() {
 
   echo -n "Push to GitHub origin..."
   log_file=$(log_filename origin)
-  git push origin $current_branch &> $log_file
+  git push -u origin $current_branch &> $log_file
   print_rc $?
   if [ $? -eq 1 ]; then
     handle_error $log_file
